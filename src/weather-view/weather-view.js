@@ -19,6 +19,7 @@ class WeatherView extends PolymerElement {
           display: flex;
           flex-direction: column;
           align-items: center;
+          text-align: center;
         }
 
         :host([highlight^="8"]) {
@@ -57,8 +58,15 @@ class WeatherView extends PolymerElement {
         .weather-main + p {
           margin: 0 auto 30px auto;
         }
-      </style>
 
+        paper-icon-button#delete {
+          position: absolute;
+          top: 0;
+          right: 0;
+          margin: 20px;
+        }
+      </style>
+      <paper-icon-button id="delete" icon="remove-circle-outline" title="Remove this location" on-click="removeThisLocation"></paper-icon-button>
 
       <div class="top-banner">
         <h1>[[result.name]], [[result.sys.country]]</h1>
@@ -82,7 +90,8 @@ class WeatherView extends PolymerElement {
         type: String
       },
       result: {
-        type: Object
+        type: Object,
+        observer: '_resultsChanged'
       },
       weather: {
         type: Object,
@@ -112,7 +121,7 @@ class WeatherView extends PolymerElement {
 
   updateWeather() {
     if(this.location.coords) {
-      fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + this.location.coords.lat + '&lon=' + this.location.coords.lon  + '&APPID=' + this.apiKey).then((e)=> {
+      fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + this.location.coords.lat + '&lon=' + this.location.coords.lng  + '&APPID=' + this.apiKey).then((e)=> {
         if(e.status == 200)
           return e.json();
           throw e;
@@ -125,6 +134,26 @@ class WeatherView extends PolymerElement {
     }
   }
 
+  removeThisLocation() {
+    let locations = JSON.parse(localStorage.getItem("locations")) || [];
+    var index = locations.indexOf(this.location)
+    var newLocations = locations.filter((item) => {
+      if(item.id != this.location.id)
+        return item;
+    })
+    localStorage.setItem('locations', JSON.stringify(newLocations));
+    console.log(newLocations)
+    this.dispatchEvent(new CustomEvent('locations-updated'));
+  }
+
+  _resultsChanged(newVal) {
+    if(!newVal.name) {
+      this.set('result.name',this.location.name);
+    }
+    if(!newVal.sys.country) {
+      this.set('result.sys.country', "EARTH");
+    }
+  }
 }
 
 window.customElements.define('weather-view', WeatherView);

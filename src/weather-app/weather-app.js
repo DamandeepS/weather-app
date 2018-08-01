@@ -26,10 +26,10 @@ class WeatherApp extends PolymerElement {
 
         <dom-repeat items="{{locations}}">
           <template>
-            <weather-view location="[[item]]"></weather-view>
+            <weather-view on-locations-updated="updateLocations" location="[[item]]"></weather-view>
           </template>
         </dom-repeat>
-        <add-location></add-location>
+        <add-location on-locations-updated="updateLocations" ></add-location>
         </skeleton-carousel>
         <paper-fab icon="add" on-click='addNewLocation'></paper-fab>
     `;
@@ -39,22 +39,21 @@ class WeatherApp extends PolymerElement {
       locations: {
         type: Array,
         value: (()=> {
-          return JSON.parse(localStorage.getItem('locations')) || [{id: "location-1", coords: { lat: 12, lon: 34}},
-                                                                   {id: "location-2", coords: { lat: 23.8859, lon: 45.0792}}]
+          return JSON.parse(localStorage.getItem('locations')) || []
         })()
       }
     };
   }
 
   updateLocations() {
-    (()=> {
-      return JSON.parse(localStorage.getItem('locations')) || []
-    })()
+    this.set('locations', JSON.parse(localStorage.getItem('locations')) || [])
   }
 
   addNewLocation() {
     this.$.carousel.selected = (this.locations.length);
   }
+
+
 }
 
 window.customElements.define('weather-app', WeatherApp);
