@@ -1,0 +1,7 @@
+{
+  "name": "weather-app",
+  "short_name": "weather-app",
+  "description": "A simple app based on Polymer for view weather",
+  "start_url": "/",
+  "display": "standalone"
+}
