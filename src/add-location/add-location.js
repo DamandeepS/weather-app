@@ -34,6 +34,15 @@ class AddLocation extends PolymerElement {
           flex-grow: 1;
         }
 
+        iron-icon[icon="search"] {
+          padding: 8px;
+        }
+
+        .middle-panel > p {
+          font-size: 30px;
+          font-weight: 100;
+        }
+
         paper-button.link {
           font-size: 20px;
         }
@@ -43,7 +52,7 @@ class AddLocation extends PolymerElement {
           background-color: #fff;
           padding: 10px;
           margin: 8px;
-          border-radius: 3px 3px 0 0;
+          border-radius: 3px;
         }
 
         paper-input iron-icon, paper-input paper-icon-button {
@@ -63,7 +72,7 @@ class AddLocation extends PolymerElement {
           padding: 8px;
           border-radius: 3px;
           padding-top: 0;
-          margin-top: -8px;
+          margin-top: -11px;
         }
 
         #list paper-item {
@@ -106,9 +115,9 @@ class AddLocation extends PolymerElement {
 
 
       <div class="search-box">
-        <paper-input always-float-label label="Search" value={{query}}>
+        <paper-input always-float-label id="queryInput" label="Search" value={{query}}>
           <iron-icon icon="search" slot="prefix"></iron-icon>
-          <paper-icon-button icon="arrow-back" slot="suffix"></paper-icon-button>
+          <paper-icon-button icon="arrow-back" on-click="clearQuery" hidden$=[[!query]] slot="suffix"></paper-icon-button>
         </paper-input>
         <iron-list id="list" items=[[suggestions.json.predictions]]>
           <template>
@@ -124,7 +133,7 @@ class AddLocation extends PolymerElement {
 
       <div class="top-banner">
         <div class="middle-panel">
-        <paper-button class="link">Add location</paper-button>
+        <p>Add location</p>
 
         </div>
       </div>
@@ -133,7 +142,7 @@ class AddLocation extends PolymerElement {
         <h2>Add following vicinity?</h2>
         <div class="place-info">
           <div class="title">[[dialogInfo.vicinity]]<span hidden$=[[dialogInfo.vicinity]]>[[dialogInfo.name]]</span></div>
-          <a href="https://maps.google.com/?cid=6936533577008293006" target="_blank" alt="Maps Link">View on Maps</a>
+          <a href="[[dialogInfo.url]]" target="_blank" alt="Maps Link">View on Maps</a>
         </div>
         <div class="button">
           <paper-button dialog-dismiss>Decline</paper-button>
@@ -268,9 +277,45 @@ class AddLocation extends PolymerElement {
     }
     localStorage.setItem('locations', JSON.stringify(locations));
 
-    this.dispatchEvent(new CustomEvent('locations-updated'));
+    this.dispatchEvent(new CustomEvent('locations-updated', {
+      detail: {
+        updatedLocationId: this.dialogInfo.place_id
+      }
+    }));
   }
 
+  clearQuery() {
+    this.set("query", "")
+  }
+  addCurrentLocation() {
+    window.navigator.geolocation.getCurrentPosition(e=> {
+        let locations = JSON.parse(localStorage.getItem("locations")) || [];
+        var existingIdLocation = false;
+        locations.forEach((location)=> {
+          if(location.id == "my-location")
+            existingIdLocation = !!1;;
+        })
+        if(!existingIdLocation){
+          locations.push({id: "my-location", name: "Current Location", coords: {lat: e.coords.latitude, lng: e.coords.longitude}})
+        }
+        localStorage.setItem('locations', JSON.stringify(locations));
+
+        this.dispatchEvent(new CustomEvent('locations-updated', {
+          detail: {
+            updatedLocationId: "my-location"
+          }
+        }));
+    }, err => {
+      alert("Location permission not granted");
+      console.warn(err);
+    })
+  }
+
+  focusInput() {
+    setTimeout(()=> {
+      this.$.queryInput.focus();
+    }, 200)
+  }
 }
 
 window.customElements.define('add-location', AddLocation);

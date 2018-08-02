@@ -65,13 +65,57 @@ class WeatherView extends PolymerElement {
           right: 0;
           margin: 20px;
         }
+
+        .my-location {
+          bottom: 3px;
+          padding: 5px;
+        }
+
+        .weather-icon {
+          max-width: 400px;
+          width: 55%;
+        }
+
+        .temprature-main {
+          display: flex;
+          width: 100%;
+          max-width: 500px;
+        }
+
+        .temprature-main > div {
+          flex-grow: 1;
+        }
+
+        .temprature-main > div p {
+          font-size: 1.2em;
+          font-weight: 100;
+        }
+
+        paper-icon-button[icon="refresh"] {
+          position: absolute;
+          left: 20px;
+          top: 20px;
+        }
       </style>
+        <paper-icon-button icon="refresh" on-click="updateWeather"></paper-icon-button>
       <paper-icon-button id="delete" icon="remove-circle-outline" title="Remove this location" on-click="removeThisLocation"></paper-icon-button>
 
       <div class="top-banner">
-        <h1>[[result.name]], [[result.sys.country]]</h1>
+        <h1>[[result.name]], [[result.sys.country]]<iron-icon icon="maps:my-location" hidden$=[[!isMyLocation]] class="my-location"></iron-icon></h1>
         <h3 class="weather-main">[[weather.main]]</h3>
-        <p><span>[[weather.icon]]</span>[[weather.description]]</p>
+        <p>[[weather.description]]</p>
+        <iron-image class="weather-icon" src="/src/assets/icons/[[weather.icon]].svg"></iron-image>
+        <div class="temprature-main">
+          <div>
+            <h4>Min</h4><p>[[temprature.minTemp]]&deg;C</p>
+          </div>
+          <div>
+            <h4>Current</h4><p>[[temprature.currentTemp]]&deg;C</p>
+          </div>
+          <div>
+            <h4>Max</h4><p>[[temprature.maxTemp]]&deg;C</p>
+          </div>
+        </div>
       </div>
 
 
@@ -101,6 +145,15 @@ class WeatherView extends PolymerElement {
       highlight: {
         type: String,
         reflectToAttribute: true
+      },
+      temprature: {
+        type: Object,
+        computed: '_computeTemprature(result)'
+      },
+      locationId: {
+        type: String,
+        computed: '_computeLocationId(location)',
+        reflectToAttribute: true
       }
 
     };
@@ -115,8 +168,8 @@ class WeatherView extends PolymerElement {
   }
 
   _locationChanged(newVal, oldVal) {
-    console.log(newVal)
     this.updateWeather()
+    this.set("isMyLocation", newVal.id == "my-location")
   }
 
   updateWeather() {
@@ -126,7 +179,6 @@ class WeatherView extends PolymerElement {
           return e.json();
           throw e;
       }).then(resp => {
-        console.log(resp)
         this.set('result', resp)
       }).catch(e=> {
         console.error(e);
@@ -142,7 +194,6 @@ class WeatherView extends PolymerElement {
         return item;
     })
     localStorage.setItem('locations', JSON.stringify(newLocations));
-    console.log(newLocations)
     this.dispatchEvent(new CustomEvent('locations-updated'));
   }
 
@@ -153,6 +204,18 @@ class WeatherView extends PolymerElement {
     if(!newVal.sys.country) {
       this.set('result.sys.country', "EARTH");
     }
+  }
+
+  _computeTemprature(r) {
+    return {
+      maxTemp : (r.main.temp_max - 273.15).toPrecision(4),
+      minTemp : (r.main.temp_min - 273.15).toPrecision(4),
+      currentTemp : (r.main.temp - 273.15).toPrecision(4)
+    };
+  }
+
+  _computeLocationId(loc) {
+    return loc.id
   }
 }
 
