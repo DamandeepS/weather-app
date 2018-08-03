@@ -24,10 +24,9 @@ This will create builds of your application in the `build/` directory, optimized
 $ polymer serve build/default
 ```
 
-## Running Tests
-
+## Run Google Maps API proxy
 ```
-$ polymer test
+$ node google-maps-api-proxy-server.js
 ```
 
-Your application is already set up to be tested via [web-component-tester](https://github.com/Polymer/web-component-tester). Run `polymer test` to run your application's test suite locally.
+This is will enable Proxy server for Using Google APIs

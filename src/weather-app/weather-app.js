@@ -28,10 +28,10 @@ class WeatherApp extends PolymerElement {
 
         <dom-repeat items="{{locations}}">
           <template>
-            <weather-view on-locations-updated="updateLocations" location="[[item]]"></weather-view>
+            <weather-view on-locations-updated="updateLocations" on-weather-updated='_weatherUpdated' location="[[item]]"></weather-view>
           </template>
         </dom-repeat>
-        <add-location id="add" on-locations-updated="updateLocations" ></add-location>
+        <add-location id="add" on-locations-updated="updateLocations"></add-location>
         </skeleton-carousel>
         <paper-fab icon="add" id="fab" on-click='addNewLocation'></paper-fab>
         <paper-toast id="toast"></paper-toast>
@@ -83,6 +83,12 @@ class WeatherApp extends PolymerElement {
     }
   }
 
+  _weatherUpdated(e) {
+
+    const toast = this.$.toast;
+    toast.text="Weather Updated";
+    toast.open();
+  }
 
 }
 

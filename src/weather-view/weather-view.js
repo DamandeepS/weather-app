@@ -172,7 +172,7 @@ class WeatherView extends PolymerElement {
     this.set("isMyLocation", newVal.id == "my-location")
   }
 
-  updateWeather() {
+  updateWeather(e) {
     if(this.location.coords) {
       fetch('https://api.openweathermap.org/data/2.5/weather?lat=' + this.location.coords.lat + '&lon=' + this.location.coords.lng  + '&APPID=' + this.apiKey).then((e)=> {
         if(e.status == 200)
@@ -183,6 +183,9 @@ class WeatherView extends PolymerElement {
       }).catch(e=> {
         console.error(e);
       })
+    }
+    if(e) {
+      this.dispatchEvent(new CustomEvent('weather-updated'))
     }
   }
 
